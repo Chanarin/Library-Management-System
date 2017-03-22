@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Book</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="../assets/plugins/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="../assets/plugins/datepicker/datepicker3.css" rel="stylesheet">
+<link href="../assets/plugins/bootstrap-table/bootstrap-table.css" rel="stylesheet">
+<link href="../assets/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body>
+	<div class="container">
+		<!--<h3>Log In Security &nbsp;|&nbsp;<a href="/logout">Logout</a></h3>-->
+		<h2 style="text-align: center;">Book Management</h2>
+		<hr>
+	    <div class="row">
+	    	<button class="btn btn-primary" id="btn-new" style="margin-bottom:-70px;">Add New</button>
+	        <table class="table" id="tbl-book-list"
+                       data-toggle="table"
+                       data-toolbar="#get"
+                       data-url="/get-books/"
+                       data-search="true"
+                       data-pagination="true"
+                       data-side-pagination="server"
+                       data-page-list="[10,20]"
+                       data-pagination="true"
+                       data-height="500"
+                    >
+                    <thead>
+	                    <tr>
+	                        <th data-field="bookId">Book ID</th>
+	                        <th data-field="bookTitle" data-visible="true">Book Title</th>
+	                        <th data-field="bookISBN" data-visible="true">ISBN</th>
+	                        <th data-field="author" data-visible="true">Author Name</th>
+	                        <th data-field="edition" data-visible="true">Edition</th>
+	                        <th data-field="catName" data-visible="true">Category</th>
+	                        <th data-field="pubName" data-visible="true">Publisher</th>
+	                        <th data-field="pubDate" >Publish Date</th>
+	                        <th data-field="address">Country</th>
+	                        <th data-field="issuredDate" >Issured Date</th>
+	                        <th data-field="updatedDate">Updated Date</th>
+	                        <th data-field="actionButtons">Action</th>   	                       
+	                    </tr>
+                    </thead>
+                </table>
+	    </div>
+	</div>
+	
+<!-- Modal -->
+<div id="book-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Add New Book</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <form id="book-form">        
+	                    <div class="col-lg-12">
+	                        <label>Book Title *</label>
+	                        <input type="text" class="form-control" id="bookTitle" name="bookTitle" value=""/>
+	                    </div>
+	                    <div class="col-lg-12">
+	                        <label>ISBN *</label>
+	                        <input type="text" class="form-control" id="bookISBN" name="bookISBN" value=""/>
+	                    </div>
+	                    <div class="col-lg-12">
+	                        <label>Author Name *</label>
+	                        <input type="text" class="form-control" id="author" name="author" value=""/>
+	                        </select>
+	                    </div>
+	                    <!--add new-->
+	                    <div class="col-lg-12">
+	                        <label>Edition *</label>
+	                        <input type="text" class="form-control" id="edition" name="edition" value=""/>
+	                    </div>
+	                      <div class="col-lg-12">
+	                        <label>Category *</label>
+	                        <input type="text" class="form-control" id="catName" name="catName" value=""/>
+	                    </div>
+	                      <div class="col-lg-12">
+	                        <label>Publisher Name *</label>
+	                        <input type="text" class="form-control" id="pubName" name="pubName" value=""/>
+	                    </div>
+	                      <div class="col-lg-12">
+	                        <label>Publish Date *</label>
+	                        <input type="text" class="form-control date" id="pubDat" name="pubDate" value=""/>
+	                    </div>
+	                    <div class="col-lg-12">
+	                        <label>Address *</label>
+	                        <input type="text" class="form-control" id="address" name="address" value=""/>
+	                    </div>
+	                      <div class="col-lg-12">
+	                        <label>Issured Date *</label>
+	                        <input type="text" class="form-control date" id="issuredDate" name="issuredDate" value=""/>
+	                    </div>   
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-add" >Add</button>
+                <button type="button" class="btn btn-default" id="btn-cancel" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+	
+<script src="../assets/js/jquery-1.11.1.min.js"></script>
+<script src="../assets/plugins/bootstrap/bootstrap.min.js"></script>
+<script src="../assets/plugins/bootstrap-table/bootstrap-table.js"></script>
+<script src="../assets/plugins/datepicker/bootstrap-datepicker.js"></script>
+
+<script>
+var id = '';
+$(function(){
+	$('.date').datepicker({
+        format: 'yyyy-mm-dd'
+    });
+	
+    $('.date').datepicker().on('changeDate', function(){
+        $(this).datepicker('hide');
+    });
+	
+	$('#btn-new').on('click', function(){
+		clearForm();
+		id = '';
+		$('.modal-title').text('Add New Book');
+		$('#btn-add').text('Add');
+        $('#book-modal').modal();
+	});
+	
+	$('#btn-add').on('click', function(){
+		if(id == ''){
+			$.ajax({
+				url: '/add-book',
+				data: $('#book-form').serialize(),
+				dataType: 'JSON',
+				type: 'POST'
+			}).done(function(r){
+				if(parseInt(r.status) == 1){
+	                $('#tbl-book-list').bootstrapTable('refresh');
+	                $('#btn-cancel').click();
+					alert(r.message);
+
+				}else{
+					alert(r.message);
+				}
+			});
+		}else{
+			var data = $('#book-form').serialize();
+			data += '&id=' + id;
+			;
+			$.ajax({
+				url: '/update-book',
+				data: data,
+				dataType: 'JSON',
+				type: 'POST'
+			}).done(function(r){
+				if(parseInt(r.status) == 1){
+	                $('#tbl-book-list').bootstrapTable('refresh');
+	                $('#btn-cancel').click();
+					alert(r.message);
+
+				}else{
+					alert(r.message);
+				}
+			});
+		}		
+	});
+	
+	$('#tbl-book-list').on('click', '.delete', function(){
+		if(confirm("Are you sure to delete?")){
+			var deleteId = $(this).attr('data-id');
+			$.ajax({
+				url: '/delete-book',
+				data:{id:deleteId},
+				dataType: 'JSON',
+				type: 'POST'
+			}).done(function(r){
+				if(parseInt(r.status) == 1){
+					alert(r.message);
+	                $('#tbl-book-list').bootstrapTable('refresh');
+				}else{
+					alert(r.message);
+				}
+			});
+		}
+	});
+	
+	$('#tbl-book-list').on('click', '.edit', function(){
+			clearForm();
+			id = $(this).attr('data-id');
+			$('.modal-title').text('Edit Book (ID='+id+')');
+			$.ajax({
+				url: '/get-book' ,
+				data:{id:id},
+				dataType: 'JSON',
+				type: 'GET'
+			}).done(function(r){
+				$('#firstname').val(r.firstname);
+				$('#lastname').val(r.lastname);
+				$('#gender').val(r.gender);
+				$('#dob').val(r.dobToString);
+				$('#email').val(r.email);
+				$('#phone-number').val(r.phone);
+				$('#address').val(r.address);
+				
+				$('#btn-add').text('Update');
+		        $('#book-modal').modal();
+
+			});
+	});
+});
+
+function clearForm(){
+	$('#firstname, #lastname, #email, #dob, #phone-number, #address').val('');
+	$('#gender').val('M');
+}
+</script>	
+</body>
+</html>
